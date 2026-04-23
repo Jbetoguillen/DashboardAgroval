@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>AGROVAL · Dashboard Caseteros PRO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --green-dark: #064e3b;
+            --green: #0f766e;
+            --green-light: #a7f3d0;
+            --green-soft: #ecfdf5;
+            --topbar-green: #bbf7d0;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --danger: #dc2626;
+            --approved: #2563eb;
+            --accent: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text-main);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            background: linear-gradient(180deg, var(--green-dark), var(--green));
+            color: #ecfdf5;
+            display: flex;
+            flex-direction: column;
+            padding: 16px 14px;
+        }
+
+        .sidebar-header {
+            margin-bottom: 20px;
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 11px;
+            color: #a7f3d0;
+        }
+
+        .sidebar-section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #6ee7b7;
+            margin: 12px 0 6px;
+        }
+
+        .nav {
+            list-style: none;
+        }
+
+        .nav li {
+            margin-bottom: 4px;
+        }
+
+        .nav button {
+            width: 100%;
+            text-align: left;
+            border: none;
+            background: transparent;
+            color: #ecfdf5;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .nav button span.icon {
+            font-size: 14px;
+        }
+
+        .nav button.active {
+            background: rgba(16, 185, 129, 0.25);
+        }
+
+        .nav button:hover {
+            background: rgba(16, 185, 129, 0.35);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            font-size: 11px;
+            color: #a7f3d0;
+        }
+
+        /* MAIN AREA */
+        .main {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            background: var(--topbar-green);
+            padding: 10px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #d1fae5;
+        }
+
+        .topbar-left h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .topbar-left span {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .topbar-right input {
+            padding: 6px 8px;
+            border-radius: 999px;
+            border: 1px solid #9ca3af;
+            font-size: 12px;
+            min-width: 180px;
+        }
+
+        .btn {
+            border-radius: 999px;
+            border: none;
+            padding: 6px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-primary {
+            background: var(--green);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--green);
+            color: var(--green-dark);
+        }
+
+        .content {
+            padding: 16px 18px 24px;
+            overflow: auto;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 14px 16px;
+            box-shadow: 0 1px 4px rgba(15,23,42,0.08);
+            margin-bottom: 14px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+        }
+
+        .card-header h2 {
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .card-header h2::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: var(--green);
+        }
+
+        .card-header small {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .kpi {
+            background: var(--green-soft);
+            border-radius: 10px;
+            padding: 8px 10px;
+            border: 1px solid #d1fae5;
+        }
+
+        .kpi-label {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .kpi-value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .kpi-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .pill {
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            display: inline-block;
+        }
+
+        .pill-ok { background: #dcfce7; color: #166534; }
+        .pill-baja { background: #fee2e2; color: #b91c1c; }
+        .pill-aprobado { background: #dbeafe; color: #1e40af; }
+
+        .table-wrapper {
+            max-height: 360px;
+            overflow: auto;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        thead {
+            background: #f3f4f6;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        th, td {
+            padding: 7px 8px;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+            text-align: left;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        tbody tr:hover {
+            background: #eef2ff;
+            cursor: pointer;
+        }
+
+        .filters-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .filters-row select {
+            padding: 5px 8px;
+            border-radius: 999px;
+            border: 1px solid #d1d5db;
+            font-size: 12px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 2fr 1.2fr;
+            gap: 12px;
+        }
+
+        .foda-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .foda-box {
+            border-radius: 10px;
+            padding: 8px;
+            font-size: 12px;
+        }
+
+        .foda-F { background: #dcfce7; }
+        .foda-O { background: #e0f2fe; }
+        .foda-D { background: #fee2e2; }
+        .foda-A { background: #fef9c3; }
+
+        .tag-baja {
+            font-size: 11px;
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .tag-aprobado {
+            font-size: 11px;
+            color: var(--approved);
+            font-weight: 600;
+        }
+
+        .alert {
+            font-size: 11px;
+            padding: 6px 8px;
+            border-radius: 8px;
+            margin-top: 6px;
+        }
+
+        .alert-warn {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .alert-ok {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .alert-bad {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        @media (max-width: 960px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .kpi-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">AGROVAL</div>
+            <div class="sidebar-subtitle">Programa de Capacitación · Caseteros</div>
+        </div>
+
+        <div>
+            <div class="sidebar-section-title">Panel</div>
+            <ul class="nav">
+                <li><button class="nav-btn active" data-section="general"><span class="icon">📊</span>General</button></li>
+                <li><button class="nav-btn" data-section="activos"><span class="icon">🟢</span>Activos</button></li>
+                <li><button class="nav-btn" data-section="aprobados"><span class="icon">✅</span>Aprobados</button></li>
+                <li><button class="nav-btn" data-section="bajas"><span class="icon">🔻</span>Bajas</button></li>
+                <li><button class="nav-btn" data-section="graficas"><span class="icon">📈</span>Gráficas</button></li>
+                <li><button class="nav-btn" data-section="foda"><span class="icon">🧠</span>FODA</button></li>
+            </ul>
+        </div>
+
+        <div class="sidebar-footer">
+            Dashboard PRO · Versión HTML  
+            Datos desde API: http://localhost:5158
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main">
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Dashboard Caseteros PRO</h1>
+                <span>Seguimiento de capacitación, desempeño, rotación y aprobados</span>
+            </div>
+            <div class="topbar-right">
+                <input type="text" id="searchInput" placeholder="Buscar casetero..." />
+                <button class="btn btn-outline" id="btnExportExcel">⬇ Excel</button>
+                <button class="btn btn-primary" id="btnPrint">🖨 PDF</button>
+            </div>
+        </header>
+
+        <!-- CONTENT -->
+        <main class="content">
+
+            <!-- SECTION GENERAL -->
+            <section id="section-general" class="section active">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Indicadores generales</h2>
+                        <small>Resumen global del programa</small>
+                    </div>
+                    <div class="kpi-grid">
+                        <div class="kpi">
+                            <div class="kpi-label">Caseteros totales</div>
+                            <div class="kpi-value" id="kpi-total">-</div>
+                            <div class="kpi-sub">Incluye activos, aprobados y bajas</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="kpi-label">Activos</div>
+                            <div class="kpi-value" id="kpi-activos">-</div>
+                            <div class="kpi-sub">En capacitación</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="kpi-label">Aprobados</div>
+                            <div class="kpi-value" id="kpi-aprobados">-</div>
+                            <div class="kpi-sub">Proceso concluido</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="kpi-label">Bajas</div>
+                            <div class="kpi-value" id="kpi-bajas">-</div>
+                            <div class="kpi-sub">Rotación del programa</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Desempeño global</h2>
+                        <small>Promedios generales</small>
+                    </div>
+                    <div class="kpi-grid">
+                        <div class="kpi">
+                            <div class="kpi-label">Merma promedio</div>
+                            <div class="kpi-value" id="kpi-merma">-</div>
+                            <div class="kpi-sub">Objetivo &lt;= 5%</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="kpi-label">Limpieza promedio</div>
+                            <div class="kpi-value" id="kpi-limpieza">-</div>
+                            <div class="kpi-sub">Meta &gt;= 75</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="kpi-label">Calidad promedio</div>
+                            <div class="kpi-value" id="kpi-calidad">-</div>
+                            <div class="kpi-sub">Meta &gt;= 80</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="kpi-label">Rotación</div>
+                            <div class="kpi-value" id="kpi-rotacion">-</div>
+                            <div class="kpi-sub">% de bajas sobre total</div>
+                        </div>
+                    </div>
+                    <div id="alert-global" class="alert alert-ok" style="display:none;"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Tabla general</h2>
+                        <small>Todos los caseteros</small>
+                    </div>
+                    <div class="filters-row">
+                        <select id="filterEstado">
+                            <option value="todos">Todos los estados</option>
+                            <option value="activo">Activos</option>
+                            <option value="aprobado">Aprobados</option>
+                            <option value="baja">Bajas</option>
+                        </select>
+                        <select id="filterOrden">
+                            <option value="nombre">Ordenar por nombre</option>
+                            <option value="merma">Ordenar por merma</option>
+                            <option value="cajas">Ordenar por cajas</option>
+                            <option value="dias">Ordenar por días en capacitación</option>
+                        </select>
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Estado</th>
+                                <th>Merma</th>
+                                <th>Limpieza</th>
+                                <th>Calidad</th>
+                                <th>Resistencia</th>
+                                <th>Técnica</th>
+                                <th>Cajas</th>
+                                <th>Inicio</th>
+                                <th>Días</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tabla-general"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION ACTIVOS -->
+            <section id="section-activos" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Caseteros activos</h2>
+                        <small>En proceso de capacitación</small>
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Merma</th>
+                                <th>Limpieza</th>
+                                <th>Calidad</th>
+                                <th>Resistencia</th>
+                                <th>Técnica</th>
+                                <th>Cajas</th>
+                                <th>Inicio</th>
+                                <th>Días</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tabla-activos"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION APROBADOS -->
+            <section id="section-aprobados" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Caseteros aprobados</h2>
+                        <small>Proceso de capacitación concluido</small>
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Merma</th>
+                                <th>Limpieza</th>
+                                <th>Calidad</th>
+                                <th>Resistencia</th>
+                                <th>Técnica</th>
+                                <th>Cajas</th>
+                                <th>Inicio</th>
+                                <th>Días</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tabla-aprobados"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION BAJAS -->
+            <section id="section-bajas" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Caseteros con baja</h2>
+                        <small>Rotación del programa</small>
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Motivo</th>
+                                <th>Merma</th>
+                                <th>Limpieza</th>
+                                <th>Calidad</th>
+                                <th>Resistencia</th>
+                                <th>Técnica</th>
+                                <th>Cajas</th>
+                                <th>Inicio</th>
+                                <th>Días</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tabla-bajas"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION GRAFICAS -->
+            <section id="section-graficas" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Gráficas de desempeño</h2>
+                        <small>Merma y ranking</small>
+                    </div>
+                    <div class="grid-2">
+                        <canvas id="chartMerma"></canvas>
+                        <canvas id="chartRanking"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION FODA -->
+            <section id="section-foda" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>FODA individual</h2>
+                        <small>Análisis cualitativo por casetero</small>
+                    </div>
+                    <div class="grid-2">
+                        <div>
+                            <div class="filters-row">
+                                <select id="select-foda"></select>
+                            </div>
+                            <div id="estado-foda"></div>
+                            <div class="foda-grid">
+                                <div class="foda-box foda-F">
+                                    <strong>Fortalezas</strong>
+                                    <div id="foda-F">-</div>
+                                </div>
+                                <div class="foda-box foda-O">
+                                    <strong>Oportunidades</strong>
+                                    <div id="foda-O">-</div>
+                                </div>
+                                <div class="foda-box foda-D">
+                                    <strong>Debilidades</strong>
+                                    <div id="foda-D">-</div>
+                                </div>
+                                <div class="foda-box foda-A">
+                                    <strong>Amenazas</strong>
+                                    <div id="foda-A">-</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <canvas id="chartRadar"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<script>
+const API_BASE = "http://localhost:5158";
+const API_CASETEROS = API_BASE + "/api/caseteros";
+const API_FODA = API_BASE + "/api/foda/";
+
+let caseteros = [];
+let chartMerma, chartRanking, chartRadar;
+
+function calcularDias(inicioStr) {
+    const inicio = new Date(inicioStr + "T00:00:00");
+    const hoy = new Date();
+    const diff = hoy - inicio;
+    return Math.floor(diff / (1000 * 60 * 60 * 24));
+}
+
+function estadoCasetero(c) {
+    if (c.baja) return "baja";
+    if (c.motivo === "Aprobado" || c.motivo === "Aprobada") return "aprobado";
+    return "activo";
+}
+
+function renderEstadoPill(c) {
+    const est = estadoCasetero(c);
+    if (est === "baja") return '<span class="pill pill-baja">Baja</span>';
+    if (est === "aprobado") return '<span class="pill pill-aprobado">Aprobado</span>';
+    return '<span class="pill pill-ok">Activo</span>';
+}
+
+async function cargarDatos() {
+    const res = await fetch(API_CASETEROS);
+    caseteros = await res.json();
+
+    caseteros.forEach(c => c.dias = calcularDias(c.inicio));
+
+    renderKPIs();
+    renderTablaGeneral();
+    renderTablasEstados();
+    initFodaSelect();
+    renderGraficas();
+    initSearch();
+    initFilters();
+    initExport();
+    initNav();
+}
+
+function renderKPIs() {
+    const total = caseteros.length;
+    const activos = caseteros.filter(c => estadoCasetero(c) === "activo").length;
+    const aprobados = caseteros.filter(c => estadoCasetero(c) === "aprobado").length;
+    const bajas = caseteros.filter(c => estadoCasetero(c) === "baja").length;
+
+    const mermaProm = caseteros.reduce((s,c)=>s+c.merma,0)/total;
+    const limpProm = caseteros.reduce((s,c)=>s+c.limpieza,0)/total;
+    const calProm = caseteros.reduce((s,c)=>s+c.calidad,0)/total;
+    const rotacion = (bajas / total) * 100;
+
+    document.getElementById("kpi-total").textContent = total;
+    document.getElementById("kpi-activos").textContent = activos;
+    document.getElementById("kpi-aprobados").textContent = aprobados;
+    document.getElementById("kpi-bajas").textContent = bajas;
+
+    document.getElementById("kpi-merma").textContent = mermaProm.toFixed(1) + "%";
+    document.getElementById("kpi-limpieza").textContent = limpProm.toFixed(1);
+    document.getElementById("kpi-calidad").textContent = calProm.toFixed(1);
+    document.getElementById("kpi-rotacion").textContent = rotacion.toFixed(1) + "%";
+
+    const alert = document.getElementById("alert-global");
+    alert.style.display = "block";
+    if (mermaProm <= 5 && rotacion <= 30) {
+        alert.className = "alert alert-ok";
+        alert.textContent = "Buen desempeño global: merma y rotación dentro de parámetros aceptables.";
+    } else if (mermaProm > 5 && rotacion <= 30) {
+        alert.className = "alert alert-warn";
+        alert.textContent = "Atención: merma por encima del objetivo, pero rotación controlada.";
+    } else {
+        alert.className = "alert alert-bad";
+        alert.textContent = "Alerta: merma y/o rotación elevadas. Revisar causas y reforzar capacitación.";
+    }
+}
+
+function renderTablaGeneral() {
+    const tbody = document.getElementById("tabla-general");
+    tbody.innerHTML = "";
+    let data = [...caseteros];
+
+    const estado = document.getElementById("filterEstado").value;
+    if (estado !== "todos") {
+        data = data.filter(c => estadoCasetero(c) === estado);
+    }
+
+    const orden = document.getElementById("filterOrden").value;
+    if (orden === "nombre") data.sort((a,b)=>a.nombre.localeCompare(b.nombre));
+    if (orden === "merma") data.sort((a,b)=>b.merma - a.merma);
+    if (orden === "cajas") data.sort((a,b)=>b.cajas - a.cajas);
+    if (orden === "dias") data.sort((a,b)=>b.dias - a.dias);
+
+    const search = document.getElementById("searchInput").value.toLowerCase();
+    if (search) {
+        data = data.filter(c => c.nombre.toLowerCase().includes(search));
+    }
+
+    data.forEach(c => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${c.nombre}</td>
+            <td>${renderEstadoPill(c)}</td>
+            <td>${c.merma.toFixed(1)}%</td>
+            <td>${c.limpieza.toFixed(1)}</td>
+            <td>${c.calidad.toFixed(1)}</td>
+            <td>${c.resistencia.toFixed(1)}</td>
+            <td>${c.tecnica.toFixed(1)}</td>
+            <td>${c.cajas}</td>
+            <td>${c.inicio}</td>
+            <td>${c.dias}</td>
+        `;
+        tr.onclick = () => {
+            document.querySelector('[data-section="foda"]').click();
+            document.getElementById("select-foda").value = c.nombre;
+            actualizarFoda(c.nombre);
+            actualizarRadar(c);
+        };
+        tbody.appendChild(tr);
+    });
+}
+
+function renderTablasEstados() {
+    const activos = caseteros.filter(c => estadoCasetero(c) === "activo");
+    const aprobados = caseteros.filter(c => estadoCasetero(c) === "aprobado");
+    const bajas = caseteros.filter(c => estadoCasetero(c) === "baja");
+
+    const fillTable = (id, data, includeMotivo) => {
+        const tbody = document.getElementById(id);
+        tbody.innerHTML = "";
+        data.forEach(c => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${c.nombre}</td>
+                ${includeMotivo ? `<td>${c.motivo || ""}</td>` : ""}
+                <td>${c.merma.toFixed(1)}%</td>
+                <td>${c.limpieza.toFixed(1)}</td>
+                <td>${c.calidad.toFixed(1)}</td>
+                <td>${c.resistencia.toFixed(1)}</td>
+                <td>${c.tecnica.toFixed(1)}</td>
+                <td>${c.cajas}</td>
+                <td>${c.inicio}</td>
+                <td>${c.dias}</td>
+            `;
+            tr.onclick = () => {
+                document.querySelector('[data-section="foda"]').click();
+                document.getElementById("select-foda").value = c.nombre;
+                actualizarFoda(c.nombre);
+                actualizarRadar(c);
+            };
+            tbody.appendChild(tr);
+        });
+    };
+
+    fillTable("tabla-activos", activos, false);
+    fillTable("tabla-aprobados", aprobados, false);
+    fillTable("tabla-bajas", bajas, true);
+}
+
+function renderGraficas() {
+    const ctxMerma = document.getElementById("chartMerma").getContext("2d");
+    const ctxRanking = document.getElementById("chartRanking").getContext("2d");
+    const ctxRadar = document.getElementById("chartRadar").getContext("2d");
+
+    const labels = caseteros.map(c => c.nombre);
+    const dataMerma = caseteros.map(c => c.merma);
+
+    chartMerma = new Chart(ctxMerma, {
+        type: "bar",
+        data: {
+            labels,
+            datasets: [{
+                label: "Merma (%)",
+                data: dataMerma,
+                backgroundColor: dataMerma.map(v => v <= 5 ? "#16a34a" : "#dc2626")
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: "Merma (%)" } },
+                x: { ticks: { display: false } }
+            }
+        }
+    });
+
+    const ranking = [...caseteros].sort((a,b)=>b.cajas - a.cajas).slice(0,5);
+    chartRanking = new Chart(ctxRanking, {
+        type: "bar",
+        data: {
+            labels: ranking.map(c => c.nombre),
+            datasets: [{
+                label: "Cajas",
+                data: ranking.map(c => c.cajas),
+                backgroundColor: "#0f766e"
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: "Cajas" } }
+            }
+        }
+    });
+
+    const first = caseteros[0];
+    chartRadar = new Chart(ctxRadar, {
+        type: "radar",
+        data: {
+            labels: ["Limpieza", "Calidad", "Resistencia", "Técnica"],
+            datasets: [{
+                label: first.nombre,
+                data: [first.limpieza, first.calidad, first.resistencia, first.tecnica],
+                backgroundColor: "rgba(37,99,235,0.2)",
+                borderColor: "#2563eb",
+                pointBackgroundColor: "#2563eb"
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { r: { suggestedMin: 0, suggestedMax: 100 } },
+            plugins: { legend: { display: false } }
+        }
+    });
+}
+
+function initFodaSelect() {
+    const sel = document.getElementById("select-foda");
+    sel.innerHTML = "";
+    caseteros.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.nombre;
+        opt.textContent = c.nombre;
+        sel.appendChild(opt);
+    });
+    sel.onchange = () => {
+        const nombre = sel.value;
+        const cas = caseteros.find(c => c.nombre === nombre);
+        actualizarFoda(nombre);
+        actualizarRadar(cas);
+    };
+    if (caseteros.length > 0) {
+        sel.value = caseteros[0].nombre;
+        actualizarFoda(caseteros[0].nombre);
+        actualizarRadar(caseteros[0]);
+    }
+}
+
+async function actualizarFoda(nombre) {
+    const res = await fetch(API_FODA + encodeURIComponent(nombre));
+    const f = await res.json();
+    document.getElementById("foda-F").textContent = f.F || f.f || "N/A";
+    document.getElementById("foda-O").textContent = f.O || f.o || "N/A";
+    document.getElementById("foda-D").textContent = f.D || f.d || "N/A";
+    document.getElementById("foda-A").textContent = f.A || f.a || "N/A";
+
+    const cas = caseteros.find(c => c.nombre === nombre);
+    const estadoDiv = document.getElementById("estado-foda");
+    if (!cas) { estadoDiv.innerHTML = ""; return; }
+
+    const est = estadoCasetero(cas);
+    if (est === "baja") {
+        estadoDiv.innerHTML = `<span class="tag-baja">BAJA · ${cas.motivo || ""}</span>`;
+    } else if (est === "aprobado") {
+        estadoDiv.innerHTML = `<span class="tag-aprobado">APROBADO</span>`;
+    } else {
+        estadoDiv.innerHTML = "";
+    }
+}
+
+function actualizarRadar(c) {
+    if (!chartRadar || !c) return;
+    chartRadar.data.datasets[0].label = c.nombre;
+    chartRadar.data.datasets[0].data = [c.limpieza, c.calidad, c.resistencia, c.tecnica];
+    chartRadar.update();
+}
+
+function initSearch() {
+    document.getElementById("searchInput").addEventListener("input", () => {
+        renderTablaGeneral();
+    });
+}
+
+function initFilters() {
+    document.getElementById("filterEstado").addEventListener("change", renderTablaGeneral);
+    document.getElementById("filterOrden").addEventListener("change", renderTablaGeneral);
+}
+
+function initExport() {
+    document.getElementById("btnExportExcel").onclick = () => {
+        const rows = [["Nombre","Estado","Merma","Limpieza","Calidad","Resistencia","Técnica","Cajas","Inicio","Días"]];
+        caseteros.forEach(c => {
+            rows.push([
+                c.nombre,
+                estadoCasetero(c),
+                c.merma,
+                c.limpieza,
+                c.calidad,
+                c.resistencia,
+                c.tecnica,
+                c.cajas,
+                c.inicio,
+                c.dias
+            ]);
+        });
+        const csv = rows.map(r => r.join(";")).join("\n");
+        const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "caseteros_agroval.csv";
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
+    document.getElementById("btnPrint").onclick = () => {
+        window.print();
+    };
+}
+
+function initNav() {
+    const buttons = document.querySelectorAll(".nav-btn");
+    buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            buttons.forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            const section = btn.getAttribute("data-section");
+            document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
+            document.getElementById("section-" + section).classList.add("active");
+        });
+    });
+}
+
+cargarDatos().catch(err => {
+    console.error(err);
+    alert("No se pudo conectar con la API en " + API_BASE);
+});
+</script>
+</body>
+</html>
